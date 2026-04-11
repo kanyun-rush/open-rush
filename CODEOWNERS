@@ -1,0 +1,19 @@
+# Default owner for everything
+* @krislavten
+
+# Apps
+/apps/web/ @krislavten
+/apps/control-worker/ @krislavten
+/apps/agent-worker/ @krislavten
+
+# Core packages
+/packages/contracts/ @krislavten
+/packages/db/ @krislavten
+/packages/control-plane/ @krislavten
+/packages/sandbox/ @krislavten
+/packages/agent-runtime/ @krislavten
+/packages/stream/ @krislavten
+
+# Infrastructure
+/docker/ @krislavten
+/.github/ @krislavten

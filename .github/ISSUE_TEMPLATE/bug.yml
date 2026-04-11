@@ -1,0 +1,57 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the issue you encountered. The more specific, the easier to reproduce and fix.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Describe the unexpected behavior
+      placeholder: Include error messages, screenshots, or logs
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened instead
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How to trigger this bug
+      placeholder: |
+        1. ...
+        2. ...
+        3. See the error
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of Rush is affected
+      options:
+        - apps/web
+        - apps/control-worker
+        - apps/agent-worker
+        - packages/contracts
+        - packages/db
+        - packages/stream
+        - packages/control-plane
+        - packages/sandbox
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Environment, configuration, related specs, or your initial diagnosis

@@ -1,0 +1,38 @@
+name: Feature / Idea
+description: Propose a feature, improvement, or idea
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A good issue helps anyone (human or AI agent) understand: why this matters, what it looks like when done, and how to verify it.
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What problem does this solve? Why now?
+      placeholder: Describe the scenario, pain point, or goal
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Expected outcome
+      description: How will the system be different when this is done?
+      placeholder: Describe the end state, not the technical approach
+
+  - type: textarea
+    id: spec
+    attributes:
+      label: Related specs or references
+      description: Links to relevant specs, design docs, or external references
+      placeholder: "e.g., specs/run-lifecycle.md, or an external link"
+
+  - type: textarea
+    id: done-criteria
+    attributes:
+      label: Done criteria
+      description: What conditions must be met to close this issue
+      placeholder: A sentence or a checklist
