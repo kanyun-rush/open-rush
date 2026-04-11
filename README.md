@@ -164,28 +164,25 @@ graph LR
 
 ```mermaid
 graph LR
-    subgraph vault["Vault（统一管理）"]
+    subgraph vault["Vault（统一管理 · 加密存储）"]
         PV["平台 Vault<br/><small>运维配置 · 用户不可见</small>"]
         UV["用户 Vault<br/><small>自助管理</small>"]
     end
 
-    subgraph inject["注入策略（自动选择）"]
-        Proxy["Credential Proxy<br/><small>密钥不进容器</small>"]
-        Env["受控 Env 注入<br/><small>Bedrock SigV4</small>"]
-        File["临时文件<br/><small>GIT_ASKPASS · .npmrc</small>"]
-    end
+    Inject["沙箱 Env 注入"]
+    SB["沙箱容器"]
 
-    PV --> Proxy
-    PV --> Env
-    UV --> Proxy
-    UV --> File
+    PV --> Inject
+    UV --> Inject
+    Inject --> SB
 
     style vault fill:#fef2f2,stroke:#ef4444
-    style inject fill:#f0fdf4,stroke:#22c55e
-    style Proxy fill:#dcfce7,stroke:#22c55e,stroke-width:2px
+    style Inject fill:#f0fdf4,stroke:#22c55e
 ```
 
-用户只和 Vault 交互。Credential Proxy 是内部传输层，对用户不可见。
+Vault 统一管理所有凭据（加密存储），运行时注入沙箱环境变量。平台 Vault 对用户不可见。
+
+后续增强（可选）：对 HTTP API 类凭据启用 Credential Proxy，密钥不进容器。
 
 ## 平台能力
 
@@ -195,7 +192,7 @@ graph LR
 | **沙箱隔离** | 每任务独立容器，可插拔运行时，资源限制，网络策略 |
 | **Skills & MCP** | 插件市场 + Model Context Protocol 服务器扩展 |
 | **Memory** | 跨会话学习、用户偏好、pgvector 向量搜索 |
-| **Vault** | 双层凭据（平台 + 用户），Credential Proxy 零密钥容器 |
+| **Vault** | 双层凭据（平台 + 用户），加密存储，env 注入沙箱 |
 | **多租户** | 用户隔离、项目隔离、RBAC 权限控制 |
 | **可观测性** | OpenTelemetry traces + metrics + LLM 成本追踪 |
 
@@ -203,7 +200,7 @@ graph LR
 
 - **自托管优先** —— 你的数据、你的基础设施、你的规则
 - **Claude Code 原生** —— 三种连接模式：Anthropic API / AWS Bedrock / 自定义端点
-- **安全默认** —— 双层 Vault + Credential Proxy，凭据按类型自动选择最安全注入方式
+- **安全默认** —— 双层 Vault 加密存储，沙箱 env 注入，可选 Credential Proxy 增强
 - **可插拔** —— 沙箱、存储、认证、可观测后端均可替换
 - **零供应商锁定** —— 标准 OTEL、NextAuth.js、S3 兼容、Drizzle ORM
 

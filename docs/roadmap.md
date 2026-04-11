@@ -95,11 +95,11 @@ No multi-provider abstraction. Claude Code CLI is the sole agent runtime, config
 
 All credentials are managed through Vault. The platform auto-detects connection mode and selects the injection strategy:
 
-| Mode | Vault Type | Injection | Key in container? |
-|------|-----------|-----------|-------------------|
-| Anthropic API | `anthropic_api` | Vault → Credential Proxy | No |
-| Custom endpoint | `custom_endpoint` | Vault → Credential Proxy | No |
-| AWS Bedrock | `aws_bedrock` | Vault → env injection | Yes (SigV4 requires it) |
+| Mode | Vault Type | Injection |
+|------|-----------|-----------|
+| Anthropic API | `anthropic_api` | Vault → env injection |
+| Custom endpoint | `custom_endpoint` | Vault → env injection |
+| AWS Bedrock | `aws_bedrock` | Vault → env injection |
 
 ### Two Vault Scopes
 
@@ -110,7 +110,9 @@ All credentials are managed through Vault. The platform auto-detects connection 
 
 Runtime merge: Platform Vault loads first, User Vault overrides (same `injection_target` → user wins).
 
-Users only interact with User Vault. Platform Vault and Credential Proxy are internal — invisible to users.
+All credentials are stored encrypted in Vault and injected as env vars into the sandbox at runtime. Users only interact with User Vault. Platform Vault is invisible to users.
+
+Optional enhancement (post-MVP): Credential Proxy for HTTP API keys — credentials never enter the container.
 
 ---
 
@@ -193,7 +195,7 @@ Control Worker
 - [ ] `packages/control-plane` — RunService, EventStore, FinalizationStateMachine
 - [ ] `apps/control-worker` — pg-boss consumer + state machine
 - [ ] `packages/sandbox` — SandboxProvider (with allocator abstraction for future pooling) + OpenSandboxProvider
-- [ ] Credential Proxy — sidecar auth proxy
+- [ ] Credential Proxy — sidecar auth proxy (optional enhancement, not blocking)
 - [ ] Minimal observability — request_id propagation + structured JSON logging (pino)
 - [ ] Security baseline — STRIDE threat model + hardening checklist
 - [ ] Env var config + standard OTEL base
@@ -339,4 +341,4 @@ platform_tokens  hashed, expirable
 | Pause/Resume state loss | Checkpoint mechanism + recovery protocol |
 | Stream duplicate/out-of-order | Idempotency key + sequence protocol from M0 |
 | AI provider outage / cost spike | Fallback chain + budget limit + timeout from M1 |
-| Credential leakage via prompt injection | Credential Proxy (M0) + Vault (M2b) + output sanitizer + network egress deny |
+| Credential leakage via prompt injection | Vault encrypted storage + output sanitizer + network egress deny; optional Credential Proxy enhancement |
