@@ -6,6 +6,13 @@ export {
   type BudgetUsage,
 } from './budget.js';
 export {
+  buildEnvVars,
+  type ClaudeCodeConfig,
+  type ClaudeCodeResult,
+  type ConnectionMode,
+  resolveConnectionMode,
+} from './claude-code-provider.js';
+export {
   type LlmSpanAttributes,
   type LlmTraceEntry,
   LlmTracer,

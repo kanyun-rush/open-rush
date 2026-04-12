@@ -1,3 +1,4 @@
+export { type AppConfig, loadConfig } from './config.js';
 export {
   getRequestContext,
   type RequestContext,

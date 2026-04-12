@@ -3,6 +3,7 @@ export {
   BatchSandboxPool,
   DEFAULT_BATCH_CONFIG,
 } from './batch-sandbox.js';
+export { type OpenSandboxConfig, OpenSandboxProvider } from './open-sandbox-provider.js';
 export {
   DEFAULT_PREVIEW_CONFIG,
   type PreviewConfig,
