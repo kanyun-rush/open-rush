@@ -13,14 +13,20 @@
     "clean": "rm -rf .next node_modules coverage"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.160",
     "@auth/core": "0.41.0",
     "@rush/db": "workspace:*",
     "@tailwindcss/vite": "^4.2.2",
+    "ai": "^6.0.158",
+    "ai-sdk-provider-claude-code": "^3.4.4",
+    "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",
+    "lucide-react": "^1.8.0",
     "next": "^16.0.0",
     "next-auth": "5.0.0-beta.30",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
