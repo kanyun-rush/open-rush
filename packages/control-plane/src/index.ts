@@ -1,3 +1,4 @@
+export * from './agent/index.js';
 export * from './auth/index.js';
 export * from './conversation/index.js';
 export * from './deploy/index.js';

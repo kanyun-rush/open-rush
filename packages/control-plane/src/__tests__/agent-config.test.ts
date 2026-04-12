@@ -1,0 +1,157 @@
+import { randomUUID } from 'node:crypto';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { type AgentConfig, type AgentConfigStore, AgentRegistry } from '../agent/agent-config.js';
+
+class InMemoryAgentStore implements AgentConfigStore {
+  private agents = new Map<string, AgentConfig>();
+
+  async getBuiltinAgents(): Promise<AgentConfig[]> {
+    return Array.from(this.agents.values()).filter((a) => a.scope === 'builtin');
+  }
+
+  async getGlobalAgents(): Promise<AgentConfig[]> {
+    return Array.from(this.agents.values()).filter((a) => a.scope === 'global');
+  }
+
+  async getProjectAgents(projectId: string): Promise<AgentConfig[]> {
+    return Array.from(this.agents.values()).filter(
+      (a) => a.scope === 'project' && a.metadata?.projectId === projectId
+    );
+  }
+
+  async getById(id: string): Promise<AgentConfig | null> {
+    return this.agents.get(id) ?? null;
+  }
+
+  async create(config: AgentConfig): Promise<AgentConfig> {
+    this.agents.set(config.id, config);
+    return config;
+  }
+
+  async update(id: string, update: Partial<AgentConfig>): Promise<AgentConfig | null> {
+    const agent = this.agents.get(id);
+    if (!agent) return null;
+    Object.assign(agent, update);
+    return agent;
+  }
+
+  async remove(id: string): Promise<boolean> {
+    return this.agents.delete(id);
+  }
+}
+
+function makeAgent(overrides: Partial<AgentConfig> = {}): AgentConfig {
+  return {
+    id: randomUUID(),
+    name: 'Test Agent',
+    scope: 'project',
+    providerType: 'claude-code',
+    model: 'claude-sonnet-4-6',
+    systemPrompt: 'You are a test agent.',
+    ...overrides,
+  };
+}
+
+describe('AgentRegistry', () => {
+  let store: InMemoryAgentStore;
+  let registry: AgentRegistry;
+  const projectId = randomUUID();
+
+  beforeEach(() => {
+    store = new InMemoryAgentStore();
+    registry = new AgentRegistry(store);
+  });
+
+  describe('getBuiltinAgents', () => {
+    it('returns web-builder as builtin', () => {
+      const builtins = registry.getBuiltinAgents();
+      expect(builtins).toHaveLength(1);
+      expect(builtins[0].id).toBe('web-builder');
+    });
+  });
+
+  describe('createAgent', () => {
+    it('creates project agent', async () => {
+      const config = makeAgent({ metadata: { projectId } });
+      const created = await registry.createAgent(config);
+      expect(created.id).toBe(config.id);
+    });
+
+    it('rejects creating builtin agent', async () => {
+      await expect(registry.createAgent(makeAgent({ scope: 'builtin' }))).rejects.toThrow(
+        'Cannot create builtin'
+      );
+    });
+  });
+
+  describe('updateAgent', () => {
+    it('updates agent config', async () => {
+      const config = makeAgent();
+      await registry.createAgent(config);
+      const updated = await registry.updateAgent(config.id, { model: 'claude-opus-4-6' });
+      expect(updated.model).toBe('claude-opus-4-6');
+    });
+
+    it('rejects changing to builtin scope', async () => {
+      const config = makeAgent();
+      await registry.createAgent(config);
+      await expect(registry.updateAgent(config.id, { scope: 'builtin' })).rejects.toThrow(
+        'Cannot change agent scope to builtin'
+      );
+    });
+  });
+
+  describe('removeAgent', () => {
+    it('removes agent', async () => {
+      const config = makeAgent();
+      await registry.createAgent(config);
+      await registry.removeAgent(config.id);
+      expect(await registry.getById(config.id)).toBeNull();
+    });
+
+    it('throws for non-existent', async () => {
+      await expect(registry.removeAgent(randomUUID())).rejects.toThrow('not found');
+    });
+  });
+
+  describe('getAgentsForProject', () => {
+    it('merges builtin + global + project', async () => {
+      await store.create(makeAgent({ id: 'web-builder', scope: 'builtin' }));
+      await store.create(makeAgent({ id: 'g1', scope: 'global' }));
+      await store.create(makeAgent({ id: 'p1', scope: 'project', metadata: { projectId } }));
+
+      const agents = await registry.getAgentsForProject(projectId);
+      expect(agents).toHaveLength(3);
+    });
+
+    it('project overrides builtin with same id', async () => {
+      await store.create(
+        makeAgent({ id: 'web-builder', scope: 'builtin', model: 'claude-sonnet-4-6' })
+      );
+      await store.create(
+        makeAgent({
+          id: 'web-builder',
+          scope: 'project',
+          model: 'claude-opus-4-6',
+          metadata: { projectId },
+        })
+      );
+
+      const agents = await registry.getAgentsForProject(projectId);
+      const wb = agents.find((a) => a.id === 'web-builder');
+      expect(wb?.model).toBe('claude-opus-4-6');
+    });
+  });
+
+  describe('resolveConfig', () => {
+    it('finds agent by id in project context', async () => {
+      await store.create(makeAgent({ id: 'my-agent', scope: 'global' }));
+      const resolved = await registry.resolveConfig('my-agent', projectId);
+      expect(resolved?.id).toBe('my-agent');
+    });
+
+    it('returns null for unknown agent', async () => {
+      expect(await registry.resolveConfig('nonexistent', projectId)).toBeNull();
+    });
+  });
+});
