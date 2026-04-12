@@ -28,7 +28,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: |
+          echo "DATABASE_URL=postgresql://rush:rush@localhost:5432/rush" >> apps/web/.env
+          pnpm build
 
       - name: Type check
         run: pnpm check
