@@ -97,7 +97,8 @@ async function applySchema(db: TestDb): Promise<void> {
       default_connection_mode VARCHAR(50) DEFAULT 'anthropic',
       created_by UUID REFERENCES users(id) ON DELETE SET NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      deleted_at TIMESTAMPTZ
     )
   `);
 
@@ -222,7 +223,7 @@ async function applySchema(db: TestDb): Promise<void> {
       project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
       owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
       name VARCHAR(255) NOT NULL,
-      credential_type VARCHAR(50) NOT NULL DEFAULT 'env',
+      credential_type VARCHAR(50) NOT NULL DEFAULT 'env_var',
       encrypted_value TEXT NOT NULL,
       key_version INTEGER NOT NULL DEFAULT 1,
       injection_target VARCHAR(255),

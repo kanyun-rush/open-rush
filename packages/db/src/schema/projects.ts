@@ -13,6 +13,7 @@ export const projects = pgTable(
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (t) => [index('projects_created_by_idx').on(t.createdBy)]
 );
