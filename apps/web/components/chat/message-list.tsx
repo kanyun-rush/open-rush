@@ -2,6 +2,7 @@
 
 import type { UIMessage } from 'ai';
 import { useEffect, useRef } from 'react';
+import { LoadingDots } from '@/components/ui/loading-dots';
 import { MessageBubble } from './message-bubble';
 
 interface MessageListProps {
@@ -53,8 +54,8 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
           <MessageBubble key={msg.id} message={msg} />
         ))}
         {isLoading && messages[messages.length - 1]?.role === 'user' && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <div className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse" />
+          <div className="flex items-center gap-2 py-2 text-muted-foreground">
+            <LoadingDots size="md" label="Thinking" />
             <span className="text-sm">Thinking...</span>
           </div>
         )}
