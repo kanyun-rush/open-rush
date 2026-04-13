@@ -1,12 +1,20 @@
 'use client';
 
-import { FolderOpen, Home, LogOut, Monitor, Moon, Plus, Sun } from 'lucide-react';
+import {
+  Activity,
+  ChevronDown,
+  ChevronUp,
+  FolderOpen,
+  Layers,
+  LogOut,
+  MessageSquare,
+  Plus,
+  Rss,
+  Settings,
+  Wrench,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useTheme } from '@/components/theme-provider';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 interface SidebarUser {
@@ -25,104 +33,129 @@ interface SidebarProps {
   projects?: ProjectItem[];
 }
 
+const navWork = [{ href: '/', icon: MessageSquare, label: 'Chat' }];
+
+const navBuild = [
+  { href: '/studio', icon: Layers, label: 'Agent Studio' },
+  { href: '/skills', icon: Wrench, label: 'Skills' },
+  { href: '/mcps', icon: Rss, label: 'MCP Servers' },
+];
+
+const navObserve = [{ href: '/runs', icon: Activity, label: 'Runs & Analytics' }];
+
+function NavSection({
+  title,
+  items,
+  pathname,
+}: {
+  title: string;
+  items: typeof navWork;
+  pathname: string;
+}) {
+  return (
+    <>
+      <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-3 pt-4 pb-1">
+        {title}
+      </div>
+      {items.map((item) => {
+        const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              'flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] transition-all',
+              isActive
+                ? 'bg-accent font-medium text-foreground'
+                : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+            )}
+          >
+            <item.icon className="size-4 shrink-0" />
+            {item.label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
+
 export function Sidebar({ user, projects = [] }: SidebarProps) {
-  const { theme, setTheme } = useTheme();
   const pathname = usePathname();
 
-  const cycleTheme = () => {
-    const next = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
-    setTheme(next);
-  };
-
-  const ThemeIcon = theme === 'dark' ? Moon : theme === 'light' ? Sun : Monitor;
+  const initials = (user.name ?? user.email ?? '?').slice(0, 2).toUpperCase();
 
   return (
-    <aside className="flex flex-col h-full w-[240px] bg-secondary rounded-xl p-3 gap-2">
+    <aside className="sidebar-wrap w-[256px] shrink-0 bg-card rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.06)] flex flex-col p-3 gap-0.5 overflow-hidden max-md:hidden">
       {/* Brand */}
-      <div className="flex items-center gap-2 px-2 py-1">
-        <span className="text-lg font-semibold tracking-tight">OpenRush</span>
-      </div>
-
-      {/* Navigation */}
-      <Link
-        href="/dashboard"
-        className={cn(
-          'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm',
-          pathname === '/dashboard' ? 'bg-accent font-medium' : 'hover:bg-accent/50'
-        )}
-      >
-        <Home className="h-4 w-4" />
-        Dashboard
-      </Link>
-
-      <Link href="/dashboard">
-        <Button variant="outline" className="w-full justify-start gap-2" size="sm">
-          <Plus className="h-4 w-4" />
-          New Chat
-        </Button>
-      </Link>
-
-      <Separator />
-
-      {/* Projects */}
-      <div className="flex items-center justify-between px-2">
-        <span className="text-xs font-medium text-muted-foreground uppercase">Projects</span>
-      </div>
-      <div className="flex-1 overflow-auto custom-scrollbar">
-        {projects.length === 0 ? (
-          <p className="text-xs text-muted-foreground px-2 mt-1">No projects yet.</p>
-        ) : (
-          <div className="space-y-0.5">
-            {projects.map((project) => (
-              <Link
-                key={project.id}
-                href={`/projects/${project.id}`}
-                className={cn(
-                  'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm',
-                  pathname.startsWith(`/projects/${project.id}`)
-                    ? 'bg-accent font-medium'
-                    : 'hover:bg-accent/50'
-                )}
-              >
-                <FolderOpen className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{project.name}</span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <Separator />
-
-      {/* Bottom: user + theme + sign out */}
-      <div className="flex items-center gap-2 px-1 py-1">
-        <Avatar className="h-7 w-7" size="sm">
-          {user.image && <AvatarImage src={user.image} />}
-          <AvatarFallback>{(user.name ?? user.email ?? '?').slice(0, 2)}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{user.name ?? 'User'}</p>
+      <div className="flex items-center gap-2.5 px-2 py-2 mb-2">
+        <div className="size-7 bg-primary rounded-lg flex items-center justify-center text-primary-foreground text-xs font-bold">
+          R
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={cycleTheme}
-          aria-label={`Switch theme (current: ${theme})`}
-          className="h-7 w-7"
+        <span className="text-[15px] font-semibold tracking-tight">OpenRush</span>
+        <span className="ml-auto text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+          v0.3
+        </span>
+      </div>
+
+      {/* Project Selector */}
+      {projects.length > 0 && (
+        <button
+          type="button"
+          className="flex items-center gap-2 px-2.5 py-2 rounded-lg border border-border text-[12px] hover:bg-accent/50 transition-all cursor-pointer mb-2 w-full text-left"
         >
-          <ThemeIcon className="h-4 w-4" />
-        </Button>
-        <form action="/api/auth/signout" method="POST">
-          <Button
-            variant="ghost"
-            size="icon"
-            type="submit"
-            aria-label="Sign out"
-            className="h-7 w-7"
+          <FolderOpen className="size-3.5 text-muted-foreground shrink-0" />
+          <span className="font-medium text-foreground truncate flex-1">{projects[0].name}</span>
+          <span className="flex flex-col text-muted-foreground">
+            <ChevronUp className="size-2.5 -mb-0.5" />
+            <ChevronDown className="size-2.5 -mt-0.5" />
+          </span>
+        </button>
+      )}
+
+      {/* New Chat */}
+      <Link
+        href="/"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border text-muted-foreground text-[13px] font-medium hover:border-foreground/20 hover:text-foreground hover:bg-accent/30 transition-all w-full mb-1"
+      >
+        <Plus className="size-4" />
+        New Chat
+      </Link>
+
+      {/* Nav sections */}
+      <NavSection title="Work" items={navWork} pathname={pathname} />
+      <NavSection title="Build" items={navBuild} pathname={pathname} />
+      <NavSection title="Observe" items={navObserve} pathname={pathname} />
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Separator + User */}
+      <div className="h-px bg-border mx-1 my-1" />
+      <div className="flex items-center gap-2.5 px-2 py-1.5">
+        <div className="size-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-[11px] font-semibold text-white shrink-0">
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-medium truncate">{user.name ?? 'User'}</div>
+          <div className="text-[11px] text-muted-foreground">Admin</div>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:bg-accent/50 transition cursor-pointer"
           >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </form>
+            <Settings className="size-4" />
+          </button>
+          <form action="/api/auth/signout" method="POST">
+            <button
+              type="submit"
+              className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:bg-accent/50 transition cursor-pointer"
+              aria-label="Sign out"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </form>
+        </div>
       </div>
     </aside>
   );

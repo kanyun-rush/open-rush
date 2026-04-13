@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@source "./**/*.{ts,tsx}";
+@source "../components/**/*.{ts,tsx}";
+@source "../lib/**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 

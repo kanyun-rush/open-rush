@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { isDevAuthBypassEnabled } from '@/lib/auth-bypass';
 
 /**
  * Lightweight middleware that protects routes by checking for the session cookie.
@@ -8,6 +9,10 @@ import { type NextRequest, NextResponse } from 'next/server';
  * cannot use Node.js modules required by the database driver.
  */
 export function middleware(req: NextRequest) {
+  if (isDevAuthBypassEnabled) {
+    return NextResponse.next();
+  }
+
   const sessionCookie =
     req.cookies.get('authjs.session-token') ?? req.cookies.get('__Secure-authjs.session-token');
 
