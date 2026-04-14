@@ -81,9 +81,18 @@ export class RunOrchestrator {
       const { response } = await agentBridge.sendPrompt(fullPrompt, {
         sessionId: runId,
         env: agentContext?.env,
-        systemPrompt: agentContext?.systemPrompt,
+        modelId: agentContext?.agentConfig.model ?? undefined,
         allowedTools: agentContext?.agentConfig.allowedTools,
         maxTurns: agentContext?.agentConfig.maxSteps,
+        projectId: agentContext?.projectId,
+        agentConfig: agentContext
+          ? {
+              name: agentContext.agentConfig.name,
+              isBuiltin: agentContext.agentConfig.isBuiltin,
+              systemPrompt: agentContext.agentConfig.systemPrompt,
+              appendSystemPrompt: agentContext.agentConfig.appendSystemPrompt,
+            }
+          : undefined,
       });
 
       // 5. Consume SSE stream
