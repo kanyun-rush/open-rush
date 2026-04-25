@@ -117,11 +117,11 @@ beforeAll(async () => {
   POST_CREATE = collection.POST;
   GET_LIST = collection.GET;
   DELETE_BY_ID = idRoute.DELETE;
-});
+}, 30000);
 
 afterAll(async () => {
   await pglite.close();
-});
+}, 30000);
 
 let USER_ID = '';
 let OTHER_USER_ID = '';
