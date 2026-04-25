@@ -64,42 +64,42 @@ done
 step "Task-specific checks: $TASK"
 case "$TASK" in
   task-1)
-    pnpm --filter @openrush/db test -- agent-definition-versions 2>&1 | tail -30 \
+    pnpm --filter @open-rush/db test -- agent-definition-versions 2>&1 | tail -30 \
       && ok "db agent-definition-versions tests" \
       || fail "db agent-definition-versions tests"
     ;;
   task-2)
-    pnpm --filter @openrush/db test -- service-tokens 2>&1 | tail -30 \
+    pnpm --filter @open-rush/db test -- service-tokens 2>&1 | tail -30 \
       && ok "db service-tokens tests" \
       || fail "db service-tokens tests"
     ;;
   task-3)
-    pnpm --filter @openrush/db test -- runs 2>&1 | tail -30 \
+    pnpm --filter @open-rush/db test -- runs 2>&1 | tail -30 \
       && ok "db runs tests" \
       || fail "db runs tests"
     ;;
   task-4)
-    pnpm --filter @openrush/contracts test 2>&1 | tail -40 \
+    pnpm --filter @open-rush/contracts test 2>&1 | tail -40 \
       && ok "contracts v1 tests" \
       || fail "contracts v1 tests"
     ;;
   task-5)
-    pnpm --filter @openrush/web test -- unified-auth 2>&1 | tail -30 \
+    pnpm --filter @open-rush/web test -- unified-auth 2>&1 | tail -30 \
       && ok "unified-auth tests" \
       || fail "unified-auth tests"
     ;;
   task-6|task-8|task-9|task-12|task-13|task-14)
-    pnpm --filter @openrush/web test -- "api/v1" 2>&1 | tail -40 \
+    pnpm --filter @open-rush/web test -- "api/v1" 2>&1 | tail -40 \
       && ok "v1 api tests" \
       || fail "v1 api tests"
     ;;
   task-7|task-11)
-    pnpm --filter @openrush/control-plane test 2>&1 | tail -40 \
+    pnpm --filter @open-rush/control-plane test 2>&1 | tail -40 \
       && ok "control-plane tests" \
       || fail "control-plane tests"
     ;;
   task-10)
-    pnpm --filter @openrush/agent-worker test 2>&1 | tail -40 \
+    pnpm --filter @open-rush/agent-worker test 2>&1 | tail -40 \
       && ok "agent-worker tests" \
       || fail "agent-worker tests"
     ;;
@@ -133,7 +133,7 @@ case "$TASK" in
       ok "e2e spec exists"
       # 跑 E2E(需要 postgres + redis 容器就绪,见 AGENTS.md)
       step "Running E2E (task-18 gate)"
-      pnpm --filter @openrush/web test:e2e -- v1-api 2>&1 | tail -60 \
+      pnpm --filter @open-rush/web test:e2e -- v1-api 2>&1 | tail -60 \
         && ok "e2e v1-api passes (6 scenarios)" \
         || fail "e2e v1-api failed - 必须覆盖 specs/managed-agents-api.md §E2E 6 场景"
     fi
