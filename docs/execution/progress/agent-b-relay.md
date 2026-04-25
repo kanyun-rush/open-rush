@@ -35,12 +35,26 @@ Worktree: `/tmp/agent-wt/b`(branch `feat/task-12` 起步,task-13/14 各切独立
 - `dbFake` 用 "`where()` 返回 Promise+chain" 的 hybrid(`Object.assign(asPromise, chain)`),因为 memberships 的 `db.select().from(x).innerJoin(y,z).where(w)` 链路没 limit 直接 await。Biome 禁 `.then` 属性导致的绕路。
 - 每个 test 用 `dbFake.__select.mockReturnValueOnce(rows)` 按调用顺序排队。
 
-## task-13(待做)
+## task-13 ✅(Sparring 待跑)
 
-- 文件域: `apps/web/app/api/v1/agents/[agentId]/runs/*`
-- 核心: POST create(Idempotency-Key + hash,复用 task-11 `createRunWithIdempotency`)、GET list、GET :runId、POST :runId/cancel
-- cancel 响应把 `status='failed'` + `errorMessage='cancelled by user'` 映射回 response `status='cancelled'`(spec §E2E 3.5)
-- agent 状态 completed/cancelled → POST runs 返回 409
+基于 feat/task-12(含 task-12 PR #150 的未 merged 代码)。
+
+### 交付
+- `apps/web/app/api/v1/agents/[agentId]/runs/helpers.ts` — `runToV1`(支持 `statusOverride`)、`mapRunServiceError`(IdempotencyConflict→409、RunCannotCancel→400、RunNotFound→404)、cursor helpers
+- `[agentId]/runs/route.ts` — POST(Idempotency-Key 可选;Agent terminal → 409 VERSION_CONFLICT)、GET list
+- `[agentId]/runs/[runId]/route.ts` — GET 单 Run(cross-agent probing 一律 404)
+- `[agentId]/runs/[runId]/cancel/route.ts` — POST cancel(run.status=failed → 响应 status=cancelled)
+- 40 个单测
+
+### 关键设计决策
+- **wire 的 `agentId` = 任务 id = tasks.id**(不是 AgentDefinition id)。所有 runToV1 都接 `apiAgentId` 参数,由 route 填入。
+- **cancel 响应的 status 覆写**:service 层转 `failed` + errorMessage 表示 cancelled,API 层 `statusOverride='cancelled'` 映射(spec §E2E 3.5)。v0.1 状态机没有 cancelled 终态,这是纯 API 层伪装。
+- **已终结 cancel 幂等**:`RunAlreadyTerminalError` → route 重读 run 再以 `statusOverride='cancelled'` 返回 200。
+- **Idempotency-Key 处理**:header 存在 → 先 `idempotencyKeyHeaderSchema.safeParse` 校验格式(400 on malformed),再 `computeIdempotencyHash(parsedBody)` 算 hash(canonical JSON,key 顺序不敏感)。未带 header → 退化为 `createRun`(未传 idempotency 参数)。
+- **Agent 终态守护**:task.status ∈ {completed, cancelled} → 409 VERSION_CONFLICT(不用 IDEMPOTENCY_CONFLICT 因为跟 key 无关,用 VERSION_CONFLICT 表达"资源状态不允许此操作")。
+- **Cross-agent probing 防护**:所有 [runId] 路由先校 `run.taskId === URL agentId`,不等则 404(不泄露 run 存在于别处)。
+- **definitionVersion 必须非 null**:legacy row 没 version → 400 + hint 让客户端 recreate(task-11 保证新 row 有)。
+- **IdempotencyConflictError → 409 IDEMPOTENCY_CONFLICT**:service 层 throw,route 用 `mapRunServiceError` 捕获并映射。
 
 ## task-14(待做)
 
