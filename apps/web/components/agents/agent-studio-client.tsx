@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { archiveAgentDefinition } from '@/lib/api/archive-agent';
 import { fetchAllV1 } from '@/lib/api/v1-list';
 
 interface ProjectSummary {
@@ -219,22 +220,23 @@ export function AgentStudioClient({ projects }: AgentStudioClientProps) {
 
   const handleDelete = useCallback(
     async (agentId: string) => {
+      if (!selectedProjectId) return;
       if (!window.confirm('Delete this agent?')) return;
       setDeletingId(agentId);
       setMessage(null);
       setError(null);
       try {
-        // TODO(task-19 Step 2): migrate to POST /api/v1/agent-definitions/:id/archive.
-        // Blocker: legacy DELETE also rebinds `projects.currentAgentId` if the removed
-        // agent was current (apps/web/app/api/agents/[id]/route.ts:117-130); v1 archive
-        // only sets `archivedAt` and doesn't touch project binding, so doing it here
-        // would leave the UI referencing an archived definition. Step 2 must add the
-        // rebind step (via /api/projects/:id/agent) or extend v1 archive.
-        const res = await fetch(`/api/agents/${agentId}`, { method: 'DELETE' });
-        const json = await res.json();
-        if (!res.ok) {
-          throw new Error(json.error ?? 'Failed to delete agent');
-        }
+        // v1 migration: archive via POST /api/v1/agent-definitions/:id/archive,
+        // then (if the archived agent was the project's current binding) rebind
+        // to another active definition. See lib/api/archive-agent.ts.
+        await archiveAgentDefinition({
+          projectId: selectedProjectId,
+          agentId,
+          candidates: agents.map((a) => ({
+            id: a.id,
+            status: a.status,
+          })),
+        });
         setMessage('Agent deleted.');
         await load();
       } catch (err) {
@@ -243,7 +245,7 @@ export function AgentStudioClient({ projects }: AgentStudioClientProps) {
         setDeletingId(null);
       }
     },
-    [load]
+    [agents, load, selectedProjectId]
   );
 
   return (

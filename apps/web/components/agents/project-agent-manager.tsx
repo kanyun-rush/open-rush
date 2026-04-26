@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { MultiSelectOption } from '@/components/ui/multi-select';
+import { archiveAgentDefinition } from '@/lib/api/archive-agent';
 import { fetchAllV1 } from '@/lib/api/v1-list';
 
 interface ProjectAgentManagerProps {
@@ -192,15 +193,17 @@ export function ProjectAgentManager({ projectId }: ProjectAgentManagerProps) {
       setMessage(null);
       setError(null);
       try {
-        // TODO(task-19 Step 2): migrate to POST /api/v1/agent-definitions/:id/archive.
-        // Blocker: legacy DELETE rebinds project.currentAgentId on removal
-        // (apps/web/app/api/agents/[id]/route.ts:117-130); v1 archive doesn't.
-        // Step 2 must add the rebind step or extend v1 archive before deleting legacy.
-        const res = await fetch(`/api/agents/${agentId}`, { method: 'DELETE' });
-        const json = await res.json();
-        if (!res.ok) {
-          throw new Error(json.error ?? 'Failed to delete agent');
-        }
+        // v1 migration: archive via POST /api/v1/agent-definitions/:id/archive,
+        // then (if the archived agent was the project's current binding) rebind
+        // to another active definition. See lib/api/archive-agent.ts.
+        await archiveAgentDefinition({
+          projectId,
+          agentId,
+          candidates: agents.map((a) => ({
+            id: a.id,
+            status: a.status,
+          })),
+        });
 
         if (selectedAgentId === agentId) {
           setSelectedAgentId(null);
@@ -215,7 +218,7 @@ export function ProjectAgentManager({ projectId }: ProjectAgentManagerProps) {
         setDeletingId(null);
       }
     },
-    [load, selectedAgentId]
+    [agents, load, projectId, selectedAgentId]
   );
 
   if (loading) {
